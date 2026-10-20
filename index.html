@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Лига прогнозов · Лига чемпионов</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050b27; --bg2:#0a1647; --card:rgba(255,255,255,.05); --line:rgba(255,255,255,.12);
+  --txt:#f2f5ff; --mut:#9aa8d6; --cyan:#00d4ff; --blue:#1f6bff; --gold:#e9c46a; --green:#2ee6a6; --red:#ff5d73;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; color:var(--txt); font-family:'Montserrat',system-ui,sans-serif; min-height:100vh;
+  background:
+    radial-gradient(900px 500px at 85% -10%, rgba(31,107,255,.45), transparent 60%),
+    radial-gradient(700px 500px at -10% 30%, rgba(0,212,255,.15), transparent 60%),
+    linear-gradient(180deg,var(--bg2),var(--bg) 70%);
+  background-attachment:fixed;
+}
+body::before{ /* звёзды */
+  content:""; position:fixed; inset:0; pointer-events:none; opacity:.5;
+  background-image:
+    radial-gradient(1.5px 1.5px at 20px 30px,#fff,transparent),
+    radial-gradient(1px 1px at 120px 90px,#cfe,transparent),
+    radial-gradient(1.5px 1.5px at 210px 160px,#fff,transparent),
+    radial-gradient(1px 1px at 70px 200px,#bdf,transparent);
+  background-size:260px 240px;
+}
+.wrap{max-width:1040px;margin:0 auto;padding:0 16px 60px;position:relative}
+header{padding:34px 0 18px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.logo{width:74px;height:74px;flex:none;filter:drop-shadow(0 0 14px rgba(0,212,255,.45))}
+h1{margin:0;font-size:clamp(22px,4.5vw,38px);font-weight:900;letter-spacing:.04em;text-transform:uppercase;line-height:1.05}
+h1 small{display:block;font-size:.38em;letter-spacing:.35em;color:var(--cyan);font-weight:700;margin-bottom:6px}
+nav{display:flex;gap:6px;margin:10px 0 22px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+nav button{
+  background:none;border:0;color:var(--mut);font:700 13px 'Montserrat',sans-serif;letter-spacing:.12em;text-transform:uppercase;
+  padding:12px 16px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px
+}
+nav button.on{color:#fff;border-color:var(--cyan)}
+nav button:hover{color:#fff}
+section{display:none}section.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;backdrop-filter:blur(6px)}
+h2{font-size:15px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 14px;color:var(--cyan)}
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);text-align:center;padding:8px 6px;font-weight:700}
+td{padding:14px 6px;text-align:center;border-top:1px solid var(--line);font-weight:600}
+th:nth-child(2),td:nth-child(2){text-align:left}
+td.pos{font-weight:900;font-size:18px;width:46px;color:var(--mut)}
+tr.p1 td.pos{color:var(--gold)} tr.p1{background:linear-gradient(90deg,rgba(233,196,106,.14),transparent)}
+td.name{font-weight:800;font-size:17px}
+td.tot{font-weight:900;font-size:24px;color:#fff}
+tr.p1 td.tot{color:var(--gold)}
+.crown{margin-left:6px}
+.sub{color:var(--mut);font-size:13px}
+label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);font-weight:700;margin:14px 0 6px}
+select{width:100%;background:rgba(2,6,30,.65);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:10px;font:600 13px 'Montserrat',sans-serif;margin-bottom:8px}
+input,textarea{
+  width:100%;background:rgba(2,6,30,.65);color:var(--txt);border:1px solid var(--line);border-radius:10px;
+  padding:12px;font:500 14px/1.5 'Montserrat',sans-serif;outline:none
+}
+textarea{min-height:170px;resize:vertical;font-family:Consolas,'Courier New',monospace;font-size:13.5px}
+input:focus,textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,212,255,.15)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:760px){.grid2{grid-template-columns:1fr} td,th{padding-left:3px;padding-right:3px} td.name{font-size:15px}}
+.btn{
+  background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;border:0;border-radius:10px;padding:13px 22px;
+  font:800 13px 'Montserrat',sans-serif;letter-spacing:.12em;text-transform:uppercase;cursor:pointer
+}
+.btn:hover{filter:brightness(1.12)}
+.btn.ghost{background:none;border:1px solid var(--line);color:var(--txt)}
+.btn.danger{background:none;border:1px solid rgba(255,93,115,.5);color:var(--red)}
+.btn.sm{padding:8px 12px;font-size:11px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+.status{font-size:13px;margin-top:10px;color:var(--mut);white-space:pre-line}
+.status .bad{color:var(--red)} .status .ok{color:var(--green)}
+.round{margin-bottom:16px}
+.round-h{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.round-h h3{margin:0;font-size:18px;font-weight:800}
+.match{border-top:1px solid var(--line);padding:14px 0}
+.match-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.match-h b{font-size:16px}
+.score{font-weight:900;font-size:20px;color:var(--cyan);margin:0 8px}
+.pl{display:grid;grid-template-columns:90px 1fr auto;gap:10px;align-items:center;padding:6px 0;font-size:14px}
+.pl .pr{color:var(--mut)}
+.chips{display:flex;gap:5px;flex-wrap:wrap}
+.chip{font-size:11px;font-weight:800;padding:3px 8px;border-radius:99px;background:rgba(255,255,255,.08);letter-spacing:.04em}
+.chip.o{background:rgba(31,107,255,.3)} .chip.g{background:rgba(0,212,255,.25)} .chip.a{background:rgba(46,230,166,.25)} .chip.x{background:rgba(233,196,106,.3);color:var(--gold)}
+.pts{font-weight:900;font-size:17px;min-width:44px;text-align:right}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.rule{padding:14px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.03)}
+.rule b{display:block;font-size:26px;font-weight:900;color:var(--cyan)}
+.rule span{font-size:13px;color:var(--mut)}
+code{background:rgba(255,255,255,.08);padding:2px 6px;border-radius:5px}
+pre{background:rgba(2,6,30,.65);border:1px solid var(--line);border-radius:10px;padding:12px;overflow:auto;font-size:13px;line-height:1.6}
+.empty{text-align:center;color:var(--mut);padding:30px 10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <img class="logo" alt="UEFA Champions League" src="https://a.espncdn.com/i/leaguelogos/soccer/500-dark/2.png" onerror="this.style.display='none';document.getElementById('logoFb').style.display=''">
+  <svg id="logoFb" class="logo" style="display:none" viewBox="0 0 100 100" aria-hidden="true">
+    <defs><radialGradient id="g" cx="40%" cy="35%"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#bcd6ff"/></radialGradient></defs>
+    <circle cx="50" cy="50" r="46" fill="url(#g)"/>
+    <polygon points="50,30 69,44 62,66 38,66 31,44" fill="#0a1647"/>
+    <g stroke="#0a1647" stroke-width="3" fill="none"><path d="M50 30V8M69 44l22-8M62 66l14 18M38 66L24 84M31 44L9 36"/></g>
+    <g fill="#0a1647"><circle cx="50" cy="8" r="6"/><circle cx="91" cy="36" r="6"/><circle cx="76" cy="84" r="6"/><circle cx="24" cy="84" r="6"/><circle cx="9" cy="36" r="6"/></g>
+  </svg>
+  <h1><small>Лига прогнозов</small>Лига чемпионов</h1>
+</header>
+
+<nav id="nav">
+  <button data-t="table" class="on">Таблица</button>
+  <button data-t="add">Добавить тур</button>
+  <button data-t="rounds">Туры и баллы</button>
+  <button data-t="rules">Правила</button>
+</nav>
+
+<section id="table" class="on">
+  <div class="card">
+    <h2>Турнирная таблица</h2>
+    <div id="tbl"></div>
+  </div>
+</section>
+
+<section id="add">
+  <div class="card">
+    <h2 id="formTitle">Новый тур</h2>
+    <label>Название тура</label>
+    <input id="rname" placeholder="Например: 1 тур, 21 октября">
+    <label>Автозагрузка результатов</label>
+    <div class="row" style="margin-top:0">
+      <input type="date" id="fdate" style="width:auto">
+      <button class="btn sm" id="fetchBtn" type="button">Загрузить результаты за день</button>
+      <span class="sub">Источник: ESPN. Берутся завершённые матчи Лиги чемпионов со счётом и авторами голов.</span>
+    </div>
+    <div class="status" id="fstatus"></div>
+    <div class="grid2">
+      <div>
+        <label>Реальные результаты</label>
+        <textarea id="res" spellcheck="false" placeholder="Реал - Бавария 2:1 Винисиус, Беллингем, Кейн&#10;Арсенал - ПСЖ 0:0"></textarea>
+      </div>
+      <div>
+        <label>Прогнозы (сообщение целиком)</label>
+        <select id="dp"><option value="">Имя игрока указано в тексте</option><option>Никита</option><option>Влад</option><option>Миша</option><option>Кирилл</option></select>
+        <textarea id="prd" spellcheck="false" placeholder="Никита&#10;Реал - Бавария 2:1 Винисиус, Кейн&#10;Арсенал - ПСЖ 1:1&#10;&#10;Влад&#10;Реал - Бавария 1:1 Кейн"></textarea>
+      </div>
+    </div>
+    <div class="status" id="pstatus"></div>
+    <div class="row">
+      <button class="btn" id="save">Посчитать и сохранить</button>
+      <button class="btn ghost" id="demo">Вставить пример</button>
+      <button class="btn ghost" id="cancel" style="display:none">Отмена</button>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h2>Как писать</h2>
+    <p class="sub">Каждый матч — одна строка: <code>Хозяева - Гости счёт авторы голов</code>. Авторы через запятую (можно в скобках). У игрока сначала строка с именем, затем его матчи. Названия команд должны совпадать с результатами; если команд нет, а строка начинается со счёта (<code>2:1 Кейн</code>), прогноз привяжется по порядку матчей.</p>
+<pre>Никита
+Реал - Бавария 2:1 Винисиус, Кейн
+Арсенал - ПСЖ 1:1 Хаверц
+
+Влад
+Реал - Бавария 1:1 Кейн</pre>
+  </div>
+</section>
+
+<section id="rounds"><div id="roundsList"></div></section>
+
+<section id="rules">
+  <div class="card">
+    <h2>Система начисления очков</h2>
+    <div class="rules">
+      <div class="rule"><b>+1</b><span>Угадан исход (П1 / Х / П2)</span></div>
+      <div class="rule"><b>+3</b><span>Угадано количество голов одной из команд</span></div>
+      <div class="rule"><b>+4</b><span>За каждого угаданного автора гола</span></div>
+      <div class="rule"><b>+10</b><span>Угадан точный счёт (вместо +1 и +3)</span></div>
+    </div>
+    <p class="sub" style="margin-top:16px">Точный счёт даёт только +10: баллы за исход (+1) и за голы команды (+3) в этом случае не начисляются. Если автор забил дважды и вы указали его дважды — засчитаются оба гола. При равенстве очков выше тот, у кого больше точных счетов.</p>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h2>Данные</h2>
+    <p class="sub">Всё хранится в этом браузере. Чтобы перенести на другое устройство или сделать копию — сохраните файл и загрузите его там.</p>
+    <div class="row">
+      <button class="btn ghost sm" id="exp">Скачать копию</button>
+      <button class="btn ghost sm" id="imp">Загрузить копию</button>
+      <button class="btn danger sm" id="wipe">Удалить всё</button>
+      <input type="file" id="file" accept="application/json" style="display:none">
+    </div>
+  </div>
+</section>
+</div>
+
+<script>
+const PLAYERS = ['Никита','Влад','Миша','Кирилл'];
+const KEY = 'ucl-predictions-v1';
+let rounds = [];
+try { rounds = JSON.parse(localStorage.getItem(KEY)) || []; } catch(e){}
+let editId = null;
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm = s => s.toLowerCase().replace(/ё/g,'е').replace(/[^a-zа-я0-9]/g,'');
+const persist = () => { try{localStorage.setItem(KEY,JSON.stringify(rounds));}catch(e){} };
+
+/* ---------- парсинг ---------- */
+const MATCH_RE = /^(.+?)\s+[-–—]\s+(.+?)\s+(\d+)\s*[:\-–]\s*(\d+)\s*(.*)$/;
+const SCORE_ONLY_RE = /^(\d+)\s*[:\-–]\s*(\d+)\s*(.*)$/;
+
+function parseScorers(t){
+  return t.replace(/[()\[\]]/g,' ').split(/[,;]|\s+и\s+/i).map(s=>s.trim()).filter(Boolean);
+}
+const CSV_RE = /^([^,\d]+?)\s*,\s*(?:(п\s*[12]|[хx]|ничья|нич)\s*,\s*)?(\d+)\s*[:\-–]\s*(\d+)\s*(?:,\s*(.*))?$/i;
+const MATCH_RE2 =/^([^\d:]+?)\s*[-–—]\s*([^\d:]+?)[\s:]*(\d+)\s*[:\-–]\s*(\d+)\s*(.*)$/;
+function parseLine(line){
+  line = line.replace(/^\s*(?:\d+\s*[.)]|[-•*▪️]+)\s+/,'').replace(/[\u{1F000}-\u{1FFFF}☀-➿️]/gu,'').trim();
+  // формат «Команда Команда, П1, 2-1, Автор, Автор»
+  let m = line.match(CSV_RE);
+  if(m){
+    const o=(m[2]||'').toLowerCase().replace(/\s/g,'');
+    return {teamsRaw:m[1].trim(),hs:+m[3],as:+m[4],outcome:!o?undefined:/^п1/.test(o)?1:/^п2/.test(o)?-1:0,scorers:parseScorers(m[5]||'')};
+  }
+  m = line.match(MATCH_RE) || line.match(MATCH_RE2);
+  if(m) return {home:m[1].trim(),away:m[2].trim(),hs:+m[3],as:+m[4],scorers:parseScorers(m[5])};
+  m = line.match(SCORE_ONLY_RE);
+  if(m) return {hs:+m[1],as:+m[2],scorers:parseScorers(m[3])};
+  return null;
+}
+function parseResults(text){
+  const matches=[],warn=[];
+  text.split('\n').map(l=>l.trim()).filter(Boolean).forEach(l=>{
+    const p=parseLine(l);
+    if(p&&p.home) matches.push(p); else warn.push('Не понял строку результата: «'+l+'»');
+  });
+  return {matches,warn};
+}
+function canonPlayer(name){
+  const n=norm(name);
+  return PLAYERS.find(p=>norm(p)===n) || name;
+}
+function parsePreds(text,defPlayer){
+  const preds={},warn=[];let cur=null,idx=0;
+  if(defPlayer){cur=canonPlayer(defPlayer);preds[cur]=[];}
+  text.split('\n').map(l=>l.trim()).filter(Boolean).forEach(l=>{
+    const p=parseLine(l);
+    if(p){
+      if(!cur){warn.push('Прогноз без имени игрока: «'+l+'» — выбери игрока над полем или добавь строку с именем');return;}
+      p.idx=idx++; preds[cur].push(p);
+    } else if(/\d/.test(l)||l.length>25){
+      warn.push('Не понял строку: «'+l+'» (формат: Команда - Команда 2:1 Авторы)');
+    } else {
+      cur=canonPlayer(l.replace(/[:：]+$/,'').trim());
+      if(!preds[cur]) preds[cur]=[];
+      idx=0;
+    }
+  });
+  return {preds,warn};
+}
+
+/* ---------- подсчёт ---------- */
+const sign = (a,b)=>Math.sign(a-b);
+/* --- нечёткое сравнение рус/лат. имён: транслит + «скелет» из согласных --- */
+const RU={а:'a',б:'b',в:'v',г:'g',д:'d',е:'e',ё:'e',ж:'z',з:'z',и:'i',й:'i',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',х:'h',ц:'ts',ч:'ch',ш:'sh',щ:'sh',ъ:'',ы:'i',ь:'',э:'e',ю:'iu',я:'ia'};
+function skel(w){
+  w=w.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/ø/g,'o').replace(/ł/g,'l').replace(/đ/g,'d').replace(/ß/g,'ss').replace(/æ/g,'ae').replace(/ı/g,'i');
+  w=[...w].map(ch=>RU[ch]!==undefined?RU[ch]:ch).join('');
+  w=w.replace(/c(?=[eiy])/g,'s').replace(/ck/g,'k').replace(/c/g,'k').replace(/q/g,'k').replace(/w/g,'v').replace(/[jz]/g,'s')
+     .replace(/x/g,'ks').replace(/ph/g,'f').replace(/th/g,'t').replace(/kh/g,'h').replace(/[^a-z]/g,'');
+  return w.replace(/[aeiouy]/g,'').replace(/(.)\1+/g,'$1');
+}
+function lev(a,b){const d=[...Array(b.length+1).keys()];for(let i=1;i<=a.length;i++){let p=d[0];d[0]=i;for(let j=1;j<=b.length;j++){const t=d[j];d[j]=Math.min(d[j]+1,d[j-1]+1,p+(a[i-1]===b[j-1]?0:1));p=t;}}return d[b.length];}
+function tokensMatch(a,b){
+  const ta=a.split(/[\s\-./]+/).map(skel).filter(x=>x.length>=2),tb=b.split(/[\s\-./]+/).map(skel).filter(x=>x.length>=2);
+  return ta.some(x=>tb.some(y=>x===y||(Math.min(x.length,y.length)>=4&&lev(x,y)<=1)));
+}
+const scorerMatch = (a,b)=>{const x=norm(a),y=norm(b);return !!(x&&y&&(x===y||(Math.min(x.length,y.length)>=4&&(x.includes(y)||y.includes(x)))||tokensMatch(a,b)));};
+
+/* --- команды: словарь рус/англ. названий (первое имя — отображаемое) --- */
+const TEAMS=[
+['Реал','Реал Мадрид','Real Madrid'],['Бавария','Бавария Мюнхен','Bayern Munich','Bayern München'],['ПСЖ','Пари Сен-Жермен','Paris Saint-Germain'],
+['Манчестер Сити','Ман Сити','Сити','Manchester City'],['Ливерпуль','Liverpool'],['Интер','Интер Милан','Internazionale','Inter Milan'],
+['Милан','AC Milan'],['Ювентус','Juventus'],['Атлетико','Атлетико Мадрид','Atlético Madrid','Atletico Madrid'],['Барселона','Барса','Barcelona'],
+['Арсенал','Arsenal'],['Челси','Chelsea'],['Боруссия Д','Боруссия Дортмунд','Дортмунд','Borussia Dortmund'],['Байер','Байер Леверкузен','Леверкузен','Bayer Leverkusen'],
+['Наполи','Napoli'],['Тоттенхэм','Тоттенхем','Tottenham Hotspur','Tottenham'],['Ньюкасл','Newcastle United','Newcastle'],['Спортинг','Sporting CP','Sporting'],
+['Бенфика','Benfica'],['Порту','FC Porto','Porto'],['Айнтрахт','Айнтрахт Франкфурт','Eintracht Frankfurt'],['Брюгге','Клуб Брюгге','Club Brugge'],
+['Монако','AS Monaco','Monaco'],['Юнион СЖ','Юнион Сен-Жилуаз','Union St.-Gilloise','Union Saint-Gilloise'],['Галатасарай','Galatasaray'],
+['Црвена Звезда','Red Star Belgrade'],['Шахтёр','Шахтер','Shakhtar Donetsk'],['Лилль','Lille'],['Марсель','Marseille'],['Аякс','Ajax'],['ПСВ','PSV Eindhoven','PSV'],
+['Копенгаген','F.C. København','FC Copenhagen','Copenhagen'],['Кайрат','Kairat Almaty','Kairat'],['Бодё-Глимт','Бодо Глимт','Bodo/Glimt','Bodø/Glimt'],
+['Вильярреал','Villarreal'],['Олимпиакос','Olympiacos'],['Славия','Славия Прага','Slavia Prague'],['Пафос','Pafos'],['Карабах','Qarabag','Qarabağ'],
+['Атлетик','Атлетик Бильбао','Athletic Club','Athletic Bilbao'],['Аталанта','Atalanta'],['Фенербахче','Fenerbahce','Fenerbahçe'],['Рома','AS Roma','Roma'],
+['Сабах','Sabah FK','Sabah'],['Слован','Слован Братислава','Slovan Bratislava'],['АЕК','AEK Athens'],['Штутгарт','VfB Stuttgart','Stuttgart'],
+['Астон Вилла','Aston Villa'],['Селтик','Celtic'],['Фейеноорд','Feyenoord'],['Лацио','Lazio'],['Янг Бойз','Young Boys'],['Зальцбург','RB Salzburg','Red Bull Salzburg'],
+['Спарта','Спарта Прага','Sparta Prague'],['Жирона','Girona'],['Брест','Brest'],['Болонья','Bologna'],['Штурм','Штурм Грац','Sturm Graz'],
+['Динамо Загреб','Dinamo Zagreb','GNK Dinamo Zagreb'],['Лейпциг','РБ Лейпциг','RB Leipzig'],['Бетис','Real Betis']
+];
+function teamEntry(name){
+  const n=norm(name);if(!n)return null;
+  const e=TEAMS.findIndex(t=>t.some(a=>norm(a)===n));
+  if(e>=0)return e;
+  let best=-1,bl=0;
+  TEAMS.forEach((t,i)=>t.forEach(a=>{const x=norm(a);if(x.length>=4&&n.includes(x)&&x.length>bl){best=i;bl=x.length;}}));
+  return best>=0?best:null;
+}
+function teamEq(a,b){
+  if(norm(a)===norm(b))return true;
+  const ea=teamEntry(a),eb=teamEntry(b);
+  if(ea!==null&&eb!==null)return ea===eb;
+  return tokensMatch(a,b);
+}
+const ruTeam=n=>{const e=teamEntry(n);return e!==null?TEAMS[e][0]:n;};
+
+function scoreMatch(pred,act){
+  const r={pts:0,outcome:false,exact:false,goals:false,authors:0,none:!pred};
+  if(!pred) return r;
+  if(pred.hs===act.hs&&pred.as===act.as){r.exact=true;r.pts+=10;}
+  else{
+    if((pred.outcome!==undefined?pred.outcome:sign(pred.hs,pred.as))===sign(act.hs,act.as)){r.outcome=true;r.pts+=1;}
+    if(pred.hs===act.hs||pred.as===act.as){r.goals=true;r.pts+=3;}
+  }
+  const pool=[...act.scorers];
+  pred.scorers.forEach(s=>{
+    const i=pool.findIndex(a=>scorerMatch(s,a));
+    if(i>=0){pool.splice(i,1);r.authors++;}
+  });
+  r.pts+=r.authors*4;
+  return r;
+}
+function findPred(list,act,i){
+  if(!list) return null;
+  const splitOk=raw=>{
+    const w=raw.split(/\s+/);
+    for(let k=1;k<w.length;k++) if(teamEq(w.slice(0,k).join(' '),act.home)&&teamEq(w.slice(k).join(' '),act.away)) return true;
+    return false;
+  };
+  return list.find(p=>p.home&&teamEq(p.home,act.home)&&teamEq(p.away,act.away))
+      || list.find(p=>p.teamsRaw&&splitOk(p.teamsRaw))
+      || list.find(p=>!p.home&&!p.teamsRaw&&p.idx===i) || null;
+}
+function computeRound(r){
+  const res=parseResults(r.res),pp=parsePreds(r.prd,r.dp);
+  const players=Object.keys(pp.preds);
+  const out={matches:res.matches.map((a,i)=>({act:a,rows:players.map(pl=>{
+    const pr=findPred(pp.preds[pl],a,i);
+    return {player:pl,pred:pr,sc:scoreMatch(pr,a)};
+  })})),players,warn:[...res.warn,...pp.warn]};
+  return out;
+}
+function standings(){
+  const t={};
+  PLAYERS.forEach(p=>t[p]={name:p,total:0,exact:0,outcome:0,goals:0,authors:0,perRound:[]});
+  rounds.forEach((r,ri)=>{
+    const c=computeRound(r);
+    Object.keys(t).forEach(k=>t[k].perRound[ri]=null);
+    c.players.forEach(pl=>{
+      if(!t[pl]) t[pl]={name:pl,total:0,exact:0,outcome:0,goals:0,authors:0,perRound:rounds.map(()=>null)};
+      let sum=0;
+      c.matches.forEach(m=>{
+        const row=m.rows.find(x=>x.player===pl).sc;
+        sum+=row.pts;t[pl].exact+=row.exact;t[pl].outcome+=row.outcome;t[pl].goals+=row.goals;t[pl].authors+=row.authors;
+      });
+      t[pl].total+=sum;t[pl].perRound[ri]=sum;
+    });
+  });
+  return Object.values(t).sort((a,b)=>b.total-a.total||b.exact-a.exact||b.authors-a.authors||a.name.localeCompare(b.name));
+}
+
+/* ---------- отрисовка ---------- */
+function renderTable(){
+  const s=standings();
+  const any=rounds.length>0;
+  let h='<table><thead><tr><th>#</th><th>Игрок</th><th>Очки</th><th title="Точные счета">Счёт</th><th title="Угаданные исходы">Исход</th><th title="Голы команды">Голы</th><th title="Авторы голов">Авторы</th></tr></thead><tbody>';
+  s.forEach((p,i)=>{
+    const lead=any&&i===0&&p.total>0;
+    h+=`<tr class="${lead?'p1':''}"><td class="pos">${i+1}</td><td class="name">${esc(p.name)}${lead?'<span class="crown">🏆</span>':''}</td><td class="tot">${p.total}</td><td>${p.exact}</td><td>${p.outcome}</td><td>${p.goals}</td><td>${p.authors}</td></tr>`;
+  });
+  h+='</tbody></table>';
+  if(!any) h+='<div class="empty">Пока нет туров. Открой «Добавить тур» и вставь результаты и прогнозы.</div>';
+  else h+=`<p class="sub" style="margin:12px 4px 0">Сыграно туров: ${rounds.length}</p>`;
+  $('#tbl').innerHTML=h;
+}
+function chips(sc){
+  if(sc.none) return '<span class="chip">нет прогноза</span>';
+  let c='';
+  if(sc.exact) c+='<span class="chip x">точный счёт +10</span>';
+  if(sc.goals) c+='<span class="chip g">голы команды +3</span>';
+  if(sc.outcome) c+='<span class="chip o">исход +1</span>';
+  if(sc.authors) c+=`<span class="chip a">авторы ×${sc.authors} +${sc.authors*4}</span>`;
+  return c||'<span class="chip">0</span>';
+}
+function renderRounds(){
+  if(!rounds.length){$('#roundsList').innerHTML='<div class="card empty">Туров пока нет.</div>';return;}
+  $('#roundsList').innerHTML=rounds.map((r,ri)=>{
+    const c=computeRound(r);
+    const totals=c.players.map(pl=>({pl,pts:c.matches.reduce((s,m)=>s+m.rows.find(x=>x.player===pl).sc.pts,0)})).sort((a,b)=>b.pts-a.pts);
+    return `<div class="card round"><div class="round-h"><h3>${esc(r.name)}</h3>
+      <div class="sub">${totals.map(t=>esc(t.pl)+' <b style="color:#fff">'+t.pts+'</b>').join(' · ')}</div>
+      <div><button class="btn ghost sm" data-edit="${ri}">Изменить</button> <button class="btn danger sm" data-del="${ri}">Удалить</button></div></div>
+      ${c.warn.length?`<div class="status"><span class="bad">${c.warn.map(esc).join('\n')}</span></div>`:''}
+      ${c.matches.map(m=>`<div class="match"><div class="match-h"><b>${esc(m.act.home)}<span class="score">${m.act.hs}:${m.act.as}</span>${esc(m.act.away)}</b>
+        <span class="sub">${m.act.scorers.length?'Голы: '+esc(m.act.scorers.join(', ')):''}</span></div>
+        ${m.rows.map(x=>`<div class="pl"><b>${esc(x.player)}</b>
+          <div><span class="pr">${x.pred?x.pred.hs+':'+x.pred.as+(x.pred.scorers.length?' · '+esc(x.pred.scorers.join(', ')):''):'—'}</span><div class="chips" style="margin-top:4px">${chips(x.sc)}</div></div>
+          <div class="pts">+${x.sc.pts}</div></div>`).join('')}
+      </div>`).join('')}</div>`;
+  }).join('');
+}
+function renderAll(){renderTable();renderRounds();}
+
+/* ---------- форма ---------- */
+function liveStatus(){
+  const res=parseResults($('#res').value),pp=parsePreds($('#prd').value,$('#dp').value);
+  const names=Object.keys(pp.preds);
+  let t='';
+  if(res.matches.length||names.length)
+    t+=`<span class="ok">Матчей: ${res.matches.length} · Игроков: ${names.length}${names.length?' ('+names.map(esc).join(', ')+')':''}</span>\n`;
+  [...res.warn,...pp.warn].forEach(w=>t+=`<span class="bad">${esc(w)}</span>\n`);
+  $('#pstatus').innerHTML=t;
+  return {res,pp};
+}
+['#res','#prd','#dp'].forEach(s=>$(s).addEventListener('input',liveStatus));
+
+function resetForm(){editId=null;$('#rname').value='';$('#res').value='';$('#prd').value='';$('#dp').value='';$('#formTitle').textContent='Новый тур';$('#cancel').style.display='none';liveStatus();}
+$('#cancel').onclick=()=>{resetForm();go('rounds');};
+$('#save').onclick=()=>{
+  const {res,pp}=liveStatus();
+  if(!res.matches.length){alert('Добавь хотя бы один результат матча.');return;}
+  if(!Object.keys(pp.preds).length){alert('Не нашёл ни одного игрока с прогнозами.');return;}
+  const data={id:editId||Date.now(),name:$('#rname').value.trim()||('Тур '+(rounds.length+1)),res:$('#res').value,prd:$('#prd').value,dp:$('#dp').value};
+  if(editId!==null){const i=rounds.findIndex(r=>r.id===editId);rounds[i]=data;}else rounds.push(data);
+  persist();resetForm();renderAll();go('table');
+};
+$('#demo').onclick=()=>{
+  $('#rname').value='1 тур (пример)';
+  $('#res').value='Реал - Бавария 2:1 Винисиус, Беллингем, Кейн\nАрсенал - ПСЖ 0:0';
+  $('#prd').value='Никита\nРеал - Бавария 2:1 Винисиус, Кейн\nАрсенал - ПСЖ 1:1\n\nВлад\nРеал - Бавария 1:1 Кейн\nАрсенал - ПСЖ 0:0\n\nМиша\nРеал - Бавария 3:0 Мбаппе\nАрсенал - ПСЖ 2:1\n\nКирилл\nРеал - Бавария 2:2 Беллингем\nАрсенал - ПСЖ 0:0';
+  liveStatus();
+};
+$('#roundsList').addEventListener('click',e=>{
+  const ed=e.target.dataset.edit,dl=e.target.dataset.del;
+  if(ed!==undefined){
+    const r=rounds[ed];editId=r.id;$('#rname').value=r.name;$('#res').value=r.res;$('#prd').value=r.prd;$('#dp').value=r.dp||'';
+    $('#formTitle').textContent='Редактирование тура';$('#cancel').style.display='';liveStatus();go('add');
+  }
+  if(dl!==undefined&&confirm('Удалить тур «'+rounds[dl].name+'»?')){rounds.splice(dl,1);persist();renderAll();}
+});
+
+/* ---------- автозагрузка результатов (ESPN) ---------- */
+const todayStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+$('#fdate').value=todayStr();
+function espnToLine(ev){
+  const c=ev.competitions[0];
+  const home=c.competitors.find(x=>x.homeAway==='home'),away=c.competitors.find(x=>x.homeAway==='away');
+  const hs=+home.score,as=+away.score;
+  const goals={home:[],away:[]};
+  (c.details||[]).filter(d=>d.scoringPlay&&!d.ownGoal).forEach(d=>{
+    const side=String(d.team&&d.team.id)===String(home.team.id)?'home':'away';
+    const nm=d.athletesInvolved&&d.athletesInvolved[0]&&d.athletesInvolved[0].displayName;
+    if(nm)goals[side].push(nm.replace(/[­�]/g,''));
+  });
+  goals.home=goals.home.slice(0,hs);goals.away=goals.away.slice(0,as);
+  const sc=[...goals.home,...goals.away];
+  return `${ruTeam(home.team.displayName)} - ${ruTeam(away.team.displayName)} ${hs}:${as}${sc.length?' '+sc.join(', '):''}`;
+}
+$('#fetchBtn').onclick=async()=>{
+  const v=$('#fdate').value,st=$('#fstatus');
+  if(!v){st.innerHTML='<span class="bad">Выбери дату.</span>';return;}
+  st.textContent='Загружаю…';
+  try{
+    let d=null,lastErr;
+    for(const host of ['site.web.api.espn.com','site.api.espn.com']){
+      try{
+        const r=await fetch('https://'+host+'/apis/site/v2/sports/soccer/uefa.champions/scoreboard?dates='+v.replace(/-/g,''));
+        if(!r.ok)throw new Error('HTTP '+r.status);
+        d=await r.json();break;
+      }catch(e){lastErr=e;}
+    }
+    if(!d)throw lastErr;
+    const done=d.events.filter(e=>e.status.type.state==='post'),left=d.events.length-done.length;
+    if(!d.events.length){st.innerHTML='<span class="bad">В этот день матчей Лиги чемпионов нет.</span>';return;}
+    if(!done.length){st.innerHTML='<span class="bad">Матчей: '+d.events.length+', но ни один ещё не закончился.</span>';return;}
+    $('#res').value=done.map(espnToLine).join('\n');
+    if(!$('#rname').value.trim())$('#rname').value='Матчи '+v.split('-').reverse().join('.');
+    st.innerHTML='<span class="ok">Загружено завершённых матчей: '+done.length+'.</span>'+(left?' <span class="bad">Ещё не закончились: '+left+' (загрузи позже).</span>':'')+' Проверь авторов голов перед сохранением.';
+    liveStatus();
+  }catch(e){st.innerHTML='<span class="bad">Не удалось загрузить: '+esc(e.message)+'. Проверь интернет или вставь результаты вручную.</span>';}
+};
+
+/* ---------- данные ---------- */
+$('#exp').onclick=()=>{
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(rounds,null,1)],{type:'application/json'}));
+  a.download='liga-prognozov.json';a.click();
+};
+$('#imp').onclick=()=>$('#file').click();
+$('#file').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  f.text().then(t=>{
+    try{const d=JSON.parse(t);if(!Array.isArray(d))throw 0;rounds=d;persist();renderAll();alert('Загружено туров: '+d.length);}
+    catch(_){alert('Не удалось прочитать файл.');}
+  });
+  e.target.value='';
+};
+$('#wipe').onclick=()=>{if(confirm('Удалить все туры и баллы? Это нельзя отменить.')){rounds=[];persist();renderAll();}};
+
+/* ---------- навигация ---------- */
+function go(t){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id===t));
+  window.scrollTo(0,0);
+}
+$('#nav').addEventListener('click',e=>{if(e.target.dataset.t)go(e.target.dataset.t);});
+renderAll();
+</script>
+</body>
+</html>
